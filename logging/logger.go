@@ -14,7 +14,10 @@ type Logger struct {
 	*slog.Logger
 }
 
-var DefaultLogger = NewLogger("debug")
+var (
+	DefaultLogger        = NewLogger("info")
+	NopLogger     Logger = Logger{Logger: slog.New(slog.DiscardHandler)}
+)
 
 func NewLogger(level string) *Logger {
 	return &Logger{

@@ -6,15 +6,30 @@ import (
 	"github.com/umed/gib/logging"
 )
 
-type ctxKey struct{}
+type contextHolderKey int
+
+const contextHolderKeyValue contextHolderKey = 1
+
+type contextHolder struct {
+	logger *logging.Logger
+}
 
 func WithLogger(ctx context.Context, logger *logging.Logger) context.Context {
-	return context.WithValue(ctx, ctxKey{}, &logger)
+	holder := &contextHolder{}
+	if val := ctx.Value(contextHolderKeyValue); val != nil {
+		parentHolder, ok := val.(*contextHolder)
+		if !ok {
+			panic("unexpected value in context")
+		}
+		*holder = *parentHolder
+	}
+	holder.logger = logger
+	return context.WithValue(ctx, contextHolderKeyValue, &holder)
 }
 
 func Logger(ctx context.Context) *logging.Logger {
-	if logger, ok := ctx.Value(ctxKey{}).(*logging.Logger); ok {
-		return logger
+	if val, ok := ctx.Value(contextHolderKeyValue).(*contextHolder); ok && val != nil && val.logger != nil {
+		return val.logger
 	}
-	return logging.DefaultLogger
+	return &logging.NopLogger
 }
