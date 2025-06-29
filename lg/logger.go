@@ -32,7 +32,7 @@ type logger struct {
 }
 
 var (
-	DefaultLogger        = NewLogger()
+	DefaultLogger        = New()
 	NopLogger     Logger = &logger{Logger: slog.New(slog.DiscardHandler)}
 )
 
@@ -48,7 +48,7 @@ func WithLevel(level string) Option {
 	}
 }
 
-func NewLogger(opts ...Option) Logger {
+func New(opts ...Option) Logger {
 	c := Config{
 		level: Info,
 	}
