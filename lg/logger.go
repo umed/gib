@@ -25,10 +25,13 @@ type Logger interface {
 	Warn(msg string, args ...any)
 	Error(msg string, args ...any)
 	Fatal(msg string, args ...any)
+	Named(name string) Logger
+	With(attrs ...any) Logger
 }
 
 type logger struct {
 	*slog.Logger
+	name string
 }
 
 var (
@@ -83,4 +86,14 @@ func customReplaceAttr(groups []string, a slog.Attr) slog.Attr {
 		a.Value = slog.StringValue(Fatal)
 	}
 	return a
+}
+
+func (l *logger) Named(name string) Logger {
+	return &logger{Logger: l.Logger.With(String("logger_name", l.name+"."+name)), name: name}
+}
+
+func (l *logger) With(attrs ...any) Logger {
+	logger := *l
+	logger.Logger = logger.Logger.With(attrs...)
+	return &logger
 }
