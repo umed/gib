@@ -24,7 +24,7 @@ func WithLogger(ctx context.Context, logger lg.Logger) context.Context {
 		*holder = *parentHolder
 	}
 	holder.logger = logger
-	return context.WithValue(ctx, contextHolderKeyValue, &holder)
+	return context.WithValue(ctx, contextHolderKeyValue, holder)
 }
 
 func Logger(ctx context.Context) lg.Logger {
