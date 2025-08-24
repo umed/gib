@@ -3,6 +3,7 @@ package lg
 
 import (
 	"context"
+	"io"
 	"log/slog"
 	"os"
 
@@ -40,7 +41,10 @@ var (
 )
 
 type Config struct {
-	level string
+	level            string
+	addSource        bool
+	jsonOutputFormat bool
+	outputStream     io.Writer
 }
 
 type Option func(*Config)
@@ -51,18 +55,44 @@ func WithLevel(level string) Option {
 	}
 }
 
+func WithSource() Option {
+	return func(c *Config) {
+		c.addSource = true
+	}
+}
+
+func WithJSONOutputFormat() Option {
+	return func(c *Config) {
+		c.jsonOutputFormat = true
+	}
+}
+
+func WithOutputWriter(w io.Writer) Option {
+	return func(c *Config) {
+		c.outputStream = w
+	}
+}
+
 func New(opts ...Option) Logger {
 	c := Config{
-		level: Info,
+		level:        Info,
+		outputStream: os.Stdout,
 	}
 	for _, opt := range opts {
 		opt(&c)
 	}
+	handlerOptions := &slog.HandlerOptions{
+		Level:       MustParseLevel(c.level),
+		ReplaceAttr: customReplaceAttr,
+		AddSource:   c.addSource,
+	}
+	if c.jsonOutputFormat {
+		return &logger{
+			Logger: slog.New(slog.NewJSONHandler(c.outputStream, handlerOptions)),
+		}
+	}
 	return &logger{
-		Logger: slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-			Level:       MustParseLevel(c.level),
-			ReplaceAttr: customReplaceAttr,
-		})),
+		Logger: slog.New(slog.NewTextHandler(c.outputStream, handlerOptions)),
 	}
 }
 
