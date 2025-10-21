@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/umed/gib/lg"
 	"github.com/umed/gib/xctx"
+	"go.uber.org/zap"
 )
 
 func TestWithLogger(t *testing.T) {
-	logger := lg.New()
+	logger := zap.NewNop()
 	ctx := xctx.WithLogger(context.Background(), logger)
 	require.Equal(t, logger, xctx.Logger(ctx))
 }

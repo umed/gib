@@ -2,10 +2,9 @@ package util
 
 import (
 	"context"
-	"log/slog"
 
-	"github.com/umed/gib/lg"
 	"github.com/umed/gib/xctx"
+	"go.uber.org/zap"
 )
 
 func DefaultRecover(ctx context.Context) {
@@ -14,17 +13,17 @@ func DefaultRecover(ctx context.Context) {
 		return
 	}
 	if err, ok := r.(error); ok {
-		xctx.Logger(ctx).Error("recovered panic", lg.Err(err))
+		xctx.Logger(ctx).Error("recovered panic", zap.Error(err))
 	} else {
-		xctx.Logger(ctx).Error("recovered panic", slog.Any("recover", err))
+		xctx.Logger(ctx).Error("recovered panic", zap.Any("recover", err))
 	}
 }
 
-func CustomRecover(ctx context.Context, fn func(ctx context.Context, r interface{})) {
+func CustomRecover(ctx context.Context, fn func(ctx context.Context, r any)) {
 	r := recover()
 	if r == nil {
 		return
 	}
-	xctx.Logger(ctx).Debug("custom recover triggered", slog.Any("recover", r))
+	xctx.Logger(ctx).Debug("custom recover triggered", zap.Any("recover", r))
 	fn(ctx, r)
 }

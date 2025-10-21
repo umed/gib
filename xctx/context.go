@@ -3,7 +3,7 @@ package xctx
 import (
 	"context"
 
-	"github.com/umed/gib/lg"
+	"go.uber.org/zap"
 )
 
 type contextHolderKey int
@@ -11,10 +11,10 @@ type contextHolderKey int
 const contextHolderKeyValue contextHolderKey = 1
 
 type contextHolder struct {
-	logger lg.Logger
+	logger *zap.Logger
 }
 
-func WithLogger(ctx context.Context, logger lg.Logger) context.Context {
+func WithLogger(ctx context.Context, logger *zap.Logger) context.Context {
 	holder := &contextHolder{}
 	if val := ctx.Value(contextHolderKeyValue); val != nil {
 		parentHolder, ok := val.(*contextHolder)
@@ -27,9 +27,9 @@ func WithLogger(ctx context.Context, logger lg.Logger) context.Context {
 	return context.WithValue(ctx, contextHolderKeyValue, holder)
 }
 
-func Logger(ctx context.Context) lg.Logger {
+func Logger(ctx context.Context) *zap.Logger {
 	if val, ok := ctx.Value(contextHolderKeyValue).(*contextHolder); ok && val != nil && val.logger != nil {
 		return val.logger
 	}
-	return lg.NopLogger
+	return zap.NewNop()
 }
